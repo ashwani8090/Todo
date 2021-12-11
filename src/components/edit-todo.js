@@ -1,16 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View, TouchableOpacity, TextInput } from 'react-native'
 
 const EditTodo = ({ visible, onHide = () => { }, onComplete = () => { }, data }) => {
+    const [title, setTitle] = useState('');
+
+    useEffect(() => { setTitle(data?.title) }, [data?.title])
 
     return (
         (visible ? <View style={styles.body}>
             <View style={styles.alertBox}>
                 <Text style={[styles.cancelText, { fontSize: 22 }]}>Edit</Text>
-                <TextInput editable={false} value={data?.title} style={styles.inputbox} placeholder="title" onChangeText={(text) => setTitle(text)}></TextInput>
+                <TextInput value={title} style={styles.inputbox} placeholder="title" onChangeText={(text) => setTitle(text)}></TextInput>
                 <View style={styles.flexContainer}>
                     <TouchableOpacity onPress={onHide} style={[styles.button]}><Text style={styles.cancelText}>Cancel</Text></TouchableOpacity>
-                    <TouchableOpacity onPress={() => onComplete(data)} style={[styles.button, styles.confirmBtn]}><Text style={styles.confirmText}>Complete</Text></TouchableOpacity>
+                    <TouchableOpacity onPress={() => { title && onComplete({ ...data, title }) }} style={[styles.button, styles.confirmBtn]}><Text style={styles.confirmText}>Complete</Text></TouchableOpacity>
                 </View>
             </View>
         </View> :

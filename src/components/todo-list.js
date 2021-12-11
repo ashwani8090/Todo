@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, View, Text } from 'react-native'
 
 import { TodoItem } from ".";
+import Constant from "../utils/constant";
 
 const TodoList = ({ tab, data, handleActionOnItem = () => { } }) => {
     const [todoItem, setTodoItem] = useState([]);
@@ -19,10 +20,10 @@ const TodoList = ({ tab, data, handleActionOnItem = () => { } }) => {
                     return (<TodoItem
                         data={item}
                         tab={tab}
-                        onCheckBoxSelection={() => handleActionOnItem('CHECKBOX', item)}
-                        onEdit={() => handleActionOnItem('EDIT', item)}
-                        onDelete={() => handleActionOnItem('DELETE', item)}
-                        onComplete={() => handleActionOnItem('COMPLETE', item)}
+                        onCheckBoxSelection={() => handleActionOnItem(Constant.CHECKBOX, item)}
+                        onEdit={() => handleActionOnItem(Constant.EDIT, item)}
+                        onDelete={() => handleActionOnItem(Constant.DELETE, item)}
+                        onComplete={() => handleActionOnItem(Constant.COMPLETE, item)}
                     />);
                 }}
                 keyExtractor={(item, index) => index.toString()}

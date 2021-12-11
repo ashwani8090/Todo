@@ -13,6 +13,7 @@ const BottomTab = ({
             {multiple ? <View style={[styles.row, { marginBottom: 10 }]}>
                 <Icon name="delete" onPress={() => handleAction("DELETE")} />
                 {tabIndex != 1 ? <Icon name="check" onPress={() => handleAction("COMPLETE")} /> : null}
+                {tabIndex != 0 && tabIndex != 2 ? <Icon name="edit" onPress={() => handleAction("EDIT")} /> : null}
             </View> : null}
             <TouchableOpacity style={[styles.button, styles.shadow]} onPress={handleBtnPress}>
                 <View>

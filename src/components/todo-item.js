@@ -1,7 +1,9 @@
 import React from "react";
-import { View, StyleSheet } from 'react-native'
+import { View, StyleSheet, Text } from 'react-native'
 import { CheckBox } from 'react-native-elements'
 import { Icon } from "react-native-elements/dist/Icon";
+
+import Constant from "../utils/constant";
 
 const TodoItem = ({
     tab,
@@ -15,14 +17,16 @@ const TodoItem = ({
         <View style={styles.body}>
             <View style={[styles.row, styles.contentbody]} >
                 <CheckBox
+                    containerStyle={styles.checkboxContainer}
                     title={data?.title}
                     checked={data?.checked}
                     onPress={() => { onCheckBoxSelection(data) }}
                 />
+                <Text>Duration:60 sec</Text>
                 <View style={styles.row}>
                     <Icon name="delete" onPress={onDelete} />
                     <Icon name="edit" onPress={onEdit} />
-                    {tab != 'COMPLETED' ? <Icon name="check" onPress={onComplete} /> : null}
+                    {tab != Constant.COMPLETE ? <Icon name="check" onPress={onComplete} /> : null}
                 </View>
             </View>
         </View>
@@ -38,7 +42,8 @@ const styles = StyleSheet.create({
         borderRadius: 10,
         margin: 10,
         display: 'flex',
-        padding: 10
+        padding: 10,
+        backgroundColor: '#ffffff'
     },
     taskText: {
         color: '#000000',
@@ -49,6 +54,10 @@ const styles = StyleSheet.create({
     },
     contentbody: {
         alignItems: 'center', justifyContent: 'space-between'
+    },
+    checkboxContainer: {
+        backgroundColor: '#ffffff',
+        borderWidth: 0
     }
 })
 

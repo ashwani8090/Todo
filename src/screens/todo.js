@@ -1,9 +1,9 @@
 import React, { useState, useCallback, useEffect } from "react";
 import { TabView, TabBar } from 'react-native-tab-view';
-
-import { BottomTab, TodoList, EditTodoModal } from "../components";
 import AsyncStorage from '@react-native-community/async-storage';
 
+import { BottomTab, TodoList, EditTodoModal } from "../components"
+import Constants from "../utils/constant";
 
 const Todo = ({ navigation }) => {
     const [index, setIndex] = useState(0);
@@ -14,16 +14,16 @@ const Todo = ({ navigation }) => {
     const [isCheckBoxSelected, setCheckBoxIsSelected] = useState(false);
     const routes = [
         {
-            key: 'PENDING',
+            key: Constants.PENDING,
             title: 'Pending',
         },
         {
-            key: 'COMPLETED',
+            key: Constants.COMPLETE,
             title: 'Completed',
         },
         {
-            key: 'OVERDUE', title:
-                'Overdue'
+            key: Constants.OVERDUE,
+            title: 'Overdue'
         },
     ];
 
@@ -36,18 +36,25 @@ const Todo = ({ navigation }) => {
     }, [navigation]);
 
     useEffect(() => {
-        if (selectedItem) {
-            setVisible(true)
-        }
-    }, [selectedItem]);
-
-    useEffect(() => {
         if (isActioned) {
             saveData();
             setCheckBoxIsSelected(todoList.some(({ checked }) => checked))
-
         }
     }, [todoList?.length, isActioned])
+
+    useEffect(() => {
+        if (index == 0) {
+            setCheckBoxIsSelected(todoList.some((item) =>
+                (new Date().getTime() - item.duration) / 1000 < 60 && !item.completed && item.checked))
+        } else if (index == 1) {
+            setCheckBoxIsSelected(todoList.some((item) =>
+                item.completed && item.checked))
+
+        } else if (index == 2) {
+            setCheckBoxIsSelected(todoList.some((item) =>
+                (new Date().getTime() - item.duration) / 1000 > 60 && !item.completed && item.checked))
+        }
+    }, [index])
 
     async function fetchData() {
         try {
@@ -56,7 +63,7 @@ const Todo = ({ navigation }) => {
                 setTodoList(JSON.parse(values))
             }
         } catch (error) {
-            console.log('>>>', error)
+            console.error(error)
         }
     }
 
@@ -65,7 +72,7 @@ const Todo = ({ navigation }) => {
             await AsyncStorage.setItem('todos', JSON.stringify(todoList));
             setIsActioned(false);
         } catch (err) {
-            console.log(err)
+            console.error(err)
         }
     }
 
@@ -75,16 +82,16 @@ const Todo = ({ navigation }) => {
             switch (route.key) {
                 case 'PENDING':
                     return (
-                        <TodoList tab="PENDING" handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 < 10 && !item.completed) { return item; } })} />
+                        <TodoList tab={Constants.PENDING} handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 < 60 && !item.completed) { return item; } })} />
                     );
                 case 'COMPLETED':
                     return (
-                        <TodoList tab="COMPLETED" handleActionOnItem={handleAction} data={todoList.filter(({ completed }) => completed)} />
+                        <TodoList tab={Constants.COMPLETE} handleActionOnItem={handleAction} data={todoList.filter(({ completed }) => completed)} />
 
                     );
                 case 'OVERDUE':
                     return (
-                        <TodoList tab="OVERDUE" handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 > 10 && !item.completed) { return item; } })} />
+                        <TodoList tab={Constants.OVERDUE} handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 > 60 && !item.completed) { return item; } })} />
                     );
 
                 default:
@@ -101,36 +108,52 @@ const Todo = ({ navigation }) => {
     }
 
     const handleMultipleItemAction = useCallback((action) => {
-        if (action === 'DELETE') {
+        if (action === Constants.DELETE) {
             setTodoList((prev) => {
                 prev = prev.filter(({ checked }) => !checked);
                 return prev;
             })
-        } else if (action === 'COMPLETE') {
+        } else if (action === Constants.COMPLETE) {
             setTodoList((prev) => {
                 prev = prev.map((todo) => { if (todo.checked) { todo['completed'] = true; } return todo; })
                 return prev;
             })
             setVisible(false)
+        } else if (action === Constants.EDIT) {
+            setSelectedItem(null)
+            setVisible(true)
         }
         setIsActioned(true);
-    })
+    }, [])
 
     const handleAction = useCallback((action, item) => {
-        if (action === 'EDIT') {
+        if (action === Constants.EDIT) {
+            setVisible(true)
             setSelectedItem(item)
-        } else if (action === 'DELETE') {
+        } else if (action === Constants.DELETE) {
             setTodoList((prev) => {
                 prev = prev.filter(({ id }) => id != item.id);
                 return prev;
             })
-        } else if (action === 'COMPLETE') {
+        } else if (action === Constants.COMPLETE) {
             setTodoList((prev) => {
                 prev = prev.map((todo) => { if (todo.id == item.id) { todo['completed'] = true; } return todo; })
                 return prev;
             })
+        } else if (action === Constants.UPDATE) {
+            if (item.id) {
+                setTodoList((prev) => {
+                    prev = prev.map((todo) => { if (todo.id == item.id) { todo.title = item.title; } return todo; })
+                    return prev;
+                })
+            } else {
+                setTodoList((prev) => {
+                    prev = prev.map((todo) => { todo.title = item.title; return todo; })
+                    return prev;
+                })
+            }
             setVisible(false)
-        } else if (action === 'CHECKBOX') {
+        } else if (action === Constants.CHECKBOX) {
             setTodoList((prev) => {
                 prev = prev.map((todo) => {
                     if (todo.id == item.id) {
@@ -154,9 +177,9 @@ const Todo = ({ navigation }) => {
                 renderScene={renderScene}
                 onIndexChange={setIndex}
                 swipeEnabled={true}
-                renderTabBar={props => <TabBar {...props} style={{ backgroundColor: 'black' }} />} // <-- add this line
+                renderTabBar={props => <TabBar {...props} style={{ backgroundColor: 'black' }} />}
             />
-            <EditTodoModal data={selectedItem} onComplete={(item) => { handleAction('COMPLETE', item) }} visible={visible} onHide={() => { setVisible(false) }} />
+            <EditTodoModal data={selectedItem} onComplete={(item) => { handleAction(Constants.UPDATE, item) }} visible={visible} onHide={() => { setVisible(false) }} />
             <BottomTab multiple={isCheckBoxSelected} tabIndex={index} handleBtnPress={_onPress} handleAction={handleMultipleItemAction} />
         </>)
 }
