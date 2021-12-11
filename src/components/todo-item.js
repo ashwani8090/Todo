@@ -22,7 +22,7 @@ const TodoItem = ({
                     checked={data?.checked}
                     onPress={() => { onCheckBoxSelection(data) }}
                 />
-                <Text>Duration:60 sec</Text>
+                {tab == Constant.PENDING ? <Text>Duration:60 sec</Text> : null}
                 <View style={styles.row}>
                     <Icon name="delete" onPress={onDelete} />
                     <Icon name="edit" onPress={onEdit} />

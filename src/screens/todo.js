@@ -80,18 +80,18 @@ const Todo = ({ navigation }) => {
     const renderScene = useCallback(
         ({ route }) => {
             switch (route.key) {
-                case 'PENDING':
+                case Constants.PENDING:
                     return (
-                        <TodoList tab={Constants.PENDING} handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 < 60 && !item.completed) { return item; } })} />
+                        <TodoList tab={Constants.PENDING} handleActionOnItem={handleAction} data={todoList.filter(pending)} />
                     );
-                case 'COMPLETED':
+                case Constants.COMPLETE:
                     return (
-                        <TodoList tab={Constants.COMPLETE} handleActionOnItem={handleAction} data={todoList.filter(({ completed }) => completed)} />
+                        <TodoList tab={Constants.COMPLETE} handleActionOnItem={handleAction} data={todoList.filter(complete)} />
 
                     );
-                case 'OVERDUE':
+                case Constants.OVERDUE:
                     return (
-                        <TodoList tab={Constants.OVERDUE} handleActionOnItem={handleAction} data={todoList.filter((item) => { if ((new Date().getTime() - item.duration) / 1000 > 60 && !item.completed) { return item; } })} />
+                        <TodoList tab={Constants.OVERDUE} handleActionOnItem={handleAction} data={todoList.filter(overdue)} />
                     );
 
                 default:
@@ -101,6 +101,9 @@ const Todo = ({ navigation }) => {
         [index, navigation, todoList?.length],
     );
 
+    const pending = (item) => ((new Date().getTime() - item.duration) / 1000 < 60 && !item.completed)
+    const overdue = (item) => ((new Date().getTime() - item.duration) / 1000 > 60 && !item.completed)
+    const complete = (item) => (item.completed)
 
     const _onPress = () => {
         saveData();
@@ -109,9 +112,20 @@ const Todo = ({ navigation }) => {
 
     const handleMultipleItemAction = useCallback((action) => {
         if (action === Constants.DELETE) {
+            console.log(todoList.filter(complete))
+
             setTodoList((prev) => {
-                prev = prev.filter(({ checked }) => !checked);
-                return prev;
+                let filteredArray = []
+                if (index == 0) {
+                    filteredArray = prev.filter(pending)
+                } else if (index == 1) {
+                    filteredArray = prev.filter(complete)
+                } else if (index == 2) {
+                    filteredArray = prev.filter(overdue)
+                }
+                filteredArray = filteredArray.map((item) => { if (item.checked) { return item.id } });
+
+                return prev.filter((item) => !filteredArray.includes(item.id));
             })
         } else if (action === Constants.COMPLETE) {
             setTodoList((prev) => {
@@ -124,7 +138,7 @@ const Todo = ({ navigation }) => {
             setVisible(true)
         }
         setIsActioned(true);
-    }, [])
+    }, [index])
 
     const handleAction = useCallback((action, item) => {
         if (action === Constants.EDIT) {
@@ -148,7 +162,7 @@ const Todo = ({ navigation }) => {
                 })
             } else {
                 setTodoList((prev) => {
-                    prev = prev.map((todo) => { todo.title = item.title; return todo; })
+                    prev = prev.map((todo) => { if (todo.checked) { todo.title = item.title }; return todo; })
                     return prev;
                 })
             }
